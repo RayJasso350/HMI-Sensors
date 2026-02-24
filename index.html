@@ -1694,59 +1694,26 @@
   // ===== TIMEOUT DETECTOR ESP32 =====
   const TIMEOUT_ESP32 = 10000; // 10 segundos sin datos = desconectado
 
-  function resetSensorDisplay() {
-    // Corriente
-    document.getElementById('val-current').textContent = '—';
-    document.getElementById('bar-current').style.width = '0%';
-    document.getElementById('dot-current').className = 'card-status-dot';
-    document.getElementById('status-current').textContent = 'SIN SEÑAL';
-
-    // Vibración
-    document.getElementById('val-vibration').textContent = '—';
-    document.getElementById('bar-vibration').style.width = '0%';
-    document.getElementById('dot-vibration').className = 'card-status-dot';
-    document.getElementById('status-vibration').textContent = 'SIN SEÑAL';
-
-    // Térmica
-    document.getElementById('val-thermal').textContent = '—';
-    document.getElementById('bar-thermal').style.width = '0%';
-    document.getElementById('dot-thermal').className = 'card-status-dot';
-    document.getElementById('status-thermal').textContent = 'SIN SEÑAL';
-    document.getElementById('val-thermal-amb').textContent = '— °C';
-    document.getElementById('val-thermal-avg').textContent = '— °C';
-
-    // Topbar
-    const connDot = document.getElementById('conn-dot');
-    const connText = document.getElementById('conn-text');
-    connDot.style.background = 'var(--red)';
-    connDot.style.boxShadow = '0 0 8px var(--red)';
-    connText.textContent = 'ESP32 DESCONECTADO';
-    connText.style.color = 'var(--red)';
-
-    document.getElementById('last-update-time').textContent = '—';
+// Escuchar el timestamp del ESP32
+onValue(ref(db, 'sensores/timestamp'), (snap) => {
+  const ts = snap.val();
+  if (!ts) return;
+  const diff = Date.now() - (ts * 1000);  // ts está en segundos, convertir a ms
+  if (diff > TIMEOUT_ESP32) {
+    resetSensorDisplay();
   }
+});
 
-  // Escuchar el timestamp del ESP32
-  onValue(ref(db, 'sensores/timestamp'), (snap) => {
+// Revisar cada 5 segundos si el ESP32 sigue activo
+setInterval(async () => {
+  try {
+    const snap = await get(ref(db, 'sensores/timestamp'));
     const ts = snap.val();
-    if (!ts) return;
-    const ahora = Date.now();
-    const diff = ahora - ts;
-    if (diff > TIMEOUT_ESP32) {
+    if (!ts || (Date.now() - (ts * 1000)) > TIMEOUT_ESP32) {  // mismo fix aquí
       resetSensorDisplay();
     }
-  });
-
-  // Revisar cada 5 segundos si el ESP32 sigue activo
-  setInterval(async () => {
-    try {
-      const snap = await get(ref(db, 'sensores/timestamp'));
-      const ts = snap.val();
-      if (!ts || (Date.now() - ts) > TIMEOUT_ESP32) {
-        resetSensorDisplay();
-      }
-    } catch(e) {}
-  }, 5000);
+  } catch(e) {}
+}, 5000);
 
   // Redraw chart on resize
   window.addEventListener('resize', drawChart);
