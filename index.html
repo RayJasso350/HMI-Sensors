@@ -1053,8 +1053,26 @@
               </div>
             </div>
             <div class="card-value" id="val-current">—</div>
-            <div class="card-unit">AMPERIOS (A)</div>
+            <div class="card-unit">A — CORRIENTE PROMEDIO</div>
             <div class="card-bar-bg"><div class="card-bar" id="bar-current" style="width:0%"></div></div>
+            <div class="thermal-sub" style="border-top:1px solid rgba(0,212,255,0.15); padding-top:10px; margin-bottom:4px;">
+              <div class="thermal-row">
+                <span class="thermal-label">FASE 1 (R)</span>
+                <span class="thermal-val" style="color:var(--accent);font-size:13px" id="cur-f1">— A</span>
+              </div>
+              <div class="thermal-row">
+                <span class="thermal-label">FASE 2 (S)</span>
+                <span class="thermal-val" style="color:var(--accent);font-size:13px" id="cur-f2">— A</span>
+              </div>
+              <div class="thermal-row">
+                <span class="thermal-label">FASE 3 (T)</span>
+                <span class="thermal-val" style="color:var(--accent);font-size:13px" id="cur-f3">— A</span>
+              </div>
+              <div class="thermal-row">
+                <span class="thermal-label">POTENCIA</span>
+                <span class="thermal-val" style="color:var(--accent);font-size:13px" id="cur-pot">— VA</span>
+              </div>
+            </div>
             <div class="card-footer">
               <div class="card-status">
                 <div class="card-status-dot" id="dot-current"></div>
@@ -1436,12 +1454,28 @@
       if (!esp32Conectado) return;
       const val = snap.val();
       if (val !== null) {
-        const v = parseFloat(val);
-        updateSensorCard('current', v, 10);
-        chartHistory.current.push(v);
-        if (chartHistory.current.length > MAX_POINTS) chartHistory.current.shift();
-        drawChart();
-        document.getElementById('last-update-time').textContent = new Date().toLocaleTimeString();
+        let v;
+        if (typeof val === 'object') {
+          // Nuevo formato trifásico
+          v = parseFloat(val.promedio ?? 0);
+          const f1El  = document.getElementById('cur-f1');
+          const f2El  = document.getElementById('cur-f2');
+          const f3El  = document.getElementById('cur-f3');
+          const potEl = document.getElementById('cur-pot');
+          if (f1El)  f1El.textContent  = parseFloat(val.fase1       ?? 0).toFixed(3) + ' A';
+          if (f2El)  f2El.textContent  = parseFloat(val.fase2       ?? 0).toFixed(3) + ' A';
+          if (f3El)  f3El.textContent  = parseFloat(val.fase3       ?? 0).toFixed(3) + ' A';
+          if (potEl) potEl.textContent = parseFloat(val.potencia_va ?? 0).toFixed(1) + ' VA';
+        } else {
+          v = parseFloat(val);
+        }
+        if (!isNaN(v)) {
+          updateSensorCard('current', v, 10);
+          chartHistory.current.push(v);
+          if (chartHistory.current.length > MAX_POINTS) chartHistory.current.shift();
+          drawChart();
+          document.getElementById('last-update-time').textContent = new Date().toLocaleTimeString();
+        }
       }
     }, (err) => {
       connDot.style.background = 'var(--red)';
@@ -1785,6 +1819,14 @@
 
   function resetSensorDisplay() {
     document.getElementById('val-current').textContent = '—';
+    const f1El  = document.getElementById('cur-f1');
+    const f2El  = document.getElementById('cur-f2');
+    const f3El  = document.getElementById('cur-f3');
+    const potEl = document.getElementById('cur-pot');
+    if (f1El)  f1El.textContent  = '— A';
+    if (f2El)  f2El.textContent  = '— A';
+    if (f3El)  f3El.textContent  = '— A';
+    if (potEl) potEl.textContent = '— VA';
     document.getElementById('bar-current').style.width = '0%';
     document.getElementById('dot-current').className = 'card-status-dot';
     document.getElementById('status-current').textContent = 'SIN SEÑAL';
