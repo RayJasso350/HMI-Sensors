@@ -348,6 +348,21 @@
     }
     .btn-clear:hover { color: var(--red); }
 
+    @keyframes blink-border {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+    @keyframes card-alert-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255,56,96,0); border-color: rgba(255,56,96,0.3); }
+      50%       { box-shadow: 0 0 20px 4px rgba(255,56,96,0.4); border-color: rgba(255,56,96,0.9); }
+    }
+    .card-alert { animation: card-alert-pulse 1s infinite !important; }
+    @keyframes card-warn-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255,170,0,0); border-color: rgba(255,170,0,0.3); }
+      50%       { box-shadow: 0 0 16px 3px rgba(255,170,0,0.3); border-color: rgba(255,170,0,0.8); }
+    }
+    .card-warn-pulse { animation: card-warn-pulse 2s infinite !important; }
+
     .btn-eye {
       position: absolute;
       right: 34px;
@@ -1037,6 +1052,29 @@
       </div>
     </div>
 
+    <!-- SYSTEM STATUS BAR -->
+    <div id="system-status-bar" style="
+      display:flex; align-items:center; justify-content:space-between;
+      padding:8px 28px; background:rgba(0,212,255,0.07);
+      border-bottom:1px solid rgba(0,212,255,0.15); font-family:'Share Tech Mono',monospace;">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="sys-dot" style="width:10px;height:10px;border-radius:50%;background:var(--accent2);box-shadow:0 0 8px var(--accent2);animation:pulse 1.5s infinite"></div>
+        <span style="font-size:11px;letter-spacing:2px;color:var(--accent2)" id="sys-text">SYSTEM OK</span>
+      </div>
+      <span style="font-size:10px;color:var(--text2);letter-spacing:1px">MOTOR: WEG W22 — 0.75HP — 220V — 1760 RPM — 3∅</span>
+    </div>
+
+    <!-- ALERT BANNER -->
+    <div id="alert-banner" style="
+      display:none; align-items:center; gap:12px;
+      padding:10px 28px; background:rgba(255,56,96,0.15);
+      border-bottom:2px solid var(--red); animation:blink-border 1s infinite;
+      font-family:'Share Tech Mono',monospace;">
+      <span style="font-size:18px;animation:blink-border 0.5s infinite">⚠</span>
+      <span id="alert-banner-text" style="font-size:12px;letter-spacing:2px;color:var(--red)">ALERT</span>
+      <span id="alert-timer" style="margin-left:auto;font-size:11px;color:var(--red);opacity:0.8">00:00:00</span>
+    </div>
+
     <div class="hmi-main">
       <div>
         <div class="section-title">Monitoreo de Sensores</div>
@@ -1164,6 +1202,43 @@
       <div class="last-update">
         Última actualización: <span id="last-update-time">—</span>
       </div>
+
+      <!-- EVENT LOG -->
+      <div class="chart-section" style="margin-top:16px">
+        <div class="section-title">Event Log — Alert History</div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-family:'Share Tech Mono',monospace;font-size:11px">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(0,212,255,0.2)">
+                <th style="padding:8px 12px;text-align:left;color:var(--text2);letter-spacing:1px">TIME</th>
+                <th style="padding:8px 12px;text-align:left;color:var(--text2);letter-spacing:1px">SENSOR</th>
+                <th style="padding:8px 12px;text-align:left;color:var(--text2);letter-spacing:1px">EVENT</th>
+                <th style="padding:8px 12px;text-align:left;color:var(--text2);letter-spacing:1px">VALUE</th>
+              </tr>
+            </thead>
+            <tbody id="event-log-body">
+              <tr><td colspan="4" style="padding:20px;text-align:center;color:var(--text2)">NO EVENTS RECORDED</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MOTOR NAMEPLATE -->
+      <div style="margin-top:16px;padding:16px 24px;background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.15);border-radius:8px;font-family:'Share Tech Mono',monospace">
+        <div style="font-size:10px;letter-spacing:3px;color:var(--text2);margin-bottom:12px">MOTOR NAMEPLATE DATA</div>
+        <div style="display:flex;flex-wrap:wrap;gap:24px">
+          <div><span style="color:var(--text2);font-size:10px">MANUFACTURER</span><br><span style="color:var(--accent);font-size:13px">WEG</span></div>
+          <div><span style="color:var(--text2);font-size:10px">MODEL</span><br><span style="color:var(--accent);font-size:13px">W22</span></div>
+          <div><span style="color:var(--text2);font-size:10px">POWER</span><br><span style="color:var(--accent);font-size:13px">0.75 HP</span></div>
+          <div><span style="color:var(--text2);font-size:10px">VOLTAGE</span><br><span style="color:var(--accent);font-size:13px">220 V</span></div>
+          <div><span style="color:var(--text2);font-size:10px">CURRENT</span><br><span style="color:var(--accent);font-size:13px">2.93 A</span></div>
+          <div><span style="color:var(--text2);font-size:10px">SPEED</span><br><span style="color:var(--accent);font-size:13px">1760 RPM</span></div>
+          <div><span style="color:var(--text2);font-size:10px">PHASES</span><br><span style="color:var(--accent);font-size:13px">3∅</span></div>
+          <div><span style="color:var(--text2);font-size:10px">FREQUENCY</span><br><span style="color:var(--accent);font-size:13px">60 Hz</span></div>
+          <div><span style="color:var(--text2);font-size:10px">CLASS</span><br><span style="color:var(--accent);font-size:13px">IP55 / F</span></div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1521,18 +1596,18 @@
         document.getElementById('val-thermal').textContent = maxima.toFixed(1);
         const pct = Math.min((maxima / 300) * 100, 100);
         document.getElementById('bar-thermal').style.width = pct + '%';
+        // Use alert system for thermal
+        const thermalCard = document.querySelector('.sensor-card.thermal');
         const dot    = document.getElementById('dot-thermal');
         const status = document.getElementById('status-thermal');
-        if (maxima < 60) {
-          dot.className = 'card-status-dot';
-          status.textContent = 'NORMAL';
-        } else if (maxima < 75) {
-          dot.className = 'card-status-dot warn';
-          status.textContent = 'ADVERTENCIA';
-        } else {
-          dot.className = 'card-status-dot danger';
-          status.textContent = 'CRITICO — DETENER';
-        }
+        const t = THRESHOLDS['thermal'];
+        let level = 'normal';
+        if (maxima >= t.alert)     level = 'alert';
+        else if (maxima >= t.warn) level = 'warn';
+        const msg = MESSAGES['thermal'][level];
+        dot.className = level === 'normal' ? 'card-status-dot' : level === 'warn' ? 'card-status-dot warn' : 'card-status-dot danger';
+        status.textContent = msg;
+        setSensorAlert('thermal', level, thermalCard);
         document.getElementById('last-update-time').textContent = new Date().toLocaleTimeString();
       }
     });
@@ -1555,40 +1630,193 @@
     if (unsubscribeVibration) { unsubscribeVibration(); unsubscribeVibration = null; }
   }
 
+  // ===== ALERT SYSTEM =====
+  const alertState   = { current: 'normal', vibration: 'normal', thermal: 'normal' };
+  const alertTimers  = { current: null,     vibration: null,     thermal: null      };
+  const alertStart   = { current: null,     vibration: null,     thermal: null      };
+  let   alertInterval = null;
+  const eventLog     = [];
+  const MAX_EVENTS   = 50;
+
+  // Thresholds
+  const THRESHOLDS = {
+    current:   { warn: 1.5,  alert: 2.5  },
+    vibration: { warn: 2.8,  alert: 7.1  },
+    thermal:   { warn: 60.0, alert: 75.0 }
+  };
+
+  const MESSAGES = {
+    current: {
+      normal:  'NORMAL OPERATION',
+      warn:    'HIGH CURRENT — CHECK LOAD',
+      alert:   'OVERLOAD — MAINTENANCE REQUIRED'
+    },
+    vibration: {
+      normal:  'NORMAL OPERATION',
+      warn:    'ABNORMAL VIBRATION — INSPECT BEARINGS',
+      alert:   'CRITICAL VIBRATION — STOP MOTOR'
+    },
+    thermal: {
+      normal:  'NORMAL OPERATION',
+      warn:    'HIGH TEMPERATURE — CHECK COOLING',
+      alert:   'OVERHEATING — STOP MOTOR IMMEDIATELY'
+    }
+  };
+
+  const SENSOR_NAMES = { current: 'CURRENT', vibration: 'VIBRATION', thermal: 'THERMAL' };
+
+  function playBeep(freq = 880, duration = 200) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration / 1000);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + duration / 1000);
+    } catch(e) {}
+  }
+
+  function addEventLog(sensor, level, value, unit) {
+    const now = new Date().toLocaleTimeString('es-MX');
+    eventLog.unshift({ time: now, sensor: SENSOR_NAMES[sensor], level, value: value.toFixed(2) + ' ' + unit });
+    if (eventLog.length > MAX_EVENTS) eventLog.pop();
+    renderEventLog();
+  }
+
+  function renderEventLog() {
+    const tbody = document.getElementById('event-log-body');
+    if (!tbody) return;
+    if (eventLog.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--text2)">NO EVENTS RECORDED</td></tr>';
+      return;
+    }
+    tbody.innerHTML = eventLog.map(e => {
+      const color = e.level === 'alert' ? 'var(--red)' : e.level === 'warn' ? 'var(--warn)' : 'var(--accent2)';
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+        <td style="padding:7px 12px;color:var(--text2)">${e.time}</td>
+        <td style="padding:7px 12px;color:var(--accent)">${e.sensor}</td>
+        <td style="padding:7px 12px;color:${color};letter-spacing:1px">${MESSAGES[e.sensor.toLowerCase()] ? MESSAGES[e.sensor.toLowerCase()][e.level] : e.level.toUpperCase()}</td>
+        <td style="padding:7px 12px;color:${color}">${e.value}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function formatTimer(ms) {
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600).toString().padStart(2, '0');
+    const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+    const sec = (s % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${sec}`;
+  }
+
+  function updateAlertBanner() {
+    const levels = Object.values(alertState);
+    const hasAlert = levels.includes('alert');
+    const hasWarn  = levels.includes('warn');
+    const banner   = document.getElementById('alert-banner');
+    const sysDot   = document.getElementById('sys-dot');
+    const sysText  = document.getElementById('sys-text');
+
+    if (hasAlert) {
+      sysDot.style.background = 'var(--red)'; sysDot.style.boxShadow = '0 0 8px var(--red)';
+      sysText.style.color = 'var(--red)'; sysText.textContent = 'SYSTEM FAULT';
+    } else if (hasWarn) {
+      sysDot.style.background = 'var(--warn)'; sysDot.style.boxShadow = '0 0 8px var(--warn)';
+      sysText.style.color = 'var(--warn)'; sysText.textContent = 'WARNING';
+    } else {
+      sysDot.style.background = 'var(--accent2)'; sysDot.style.boxShadow = '0 0 8px var(--accent2)';
+      sysText.style.color = 'var(--accent2)'; sysText.textContent = 'SYSTEM OK';
+    }
+
+    // Find worst active alert for banner
+    let worstSensor = null, worstLevel = null;
+    for (const [s, lvl] of Object.entries(alertState)) {
+      if (lvl === 'alert') { worstSensor = s; worstLevel = 'alert'; break; }
+      if (lvl === 'warn' && !worstSensor) { worstSensor = s; worstLevel = 'warn'; }
+    }
+
+    if (worstSensor && worstLevel !== 'normal') {
+      banner.style.display = 'flex';
+      document.getElementById('alert-banner-text').textContent =
+        `[${SENSOR_NAMES[worstSensor]}] ${MESSAGES[worstSensor][worstLevel]}`;
+      banner.style.background = worstLevel === 'alert' ? 'rgba(255,56,96,0.15)' : 'rgba(255,170,0,0.1)';
+      banner.style.borderBottomColor = worstLevel === 'alert' ? 'var(--red)' : 'var(--warn)';
+      document.getElementById('alert-banner-text').style.color = worstLevel === 'alert' ? 'var(--red)' : 'var(--warn)';
+      document.getElementById('alert-timer').style.color = worstLevel === 'alert' ? 'var(--red)' : 'var(--warn)';
+      if (!alertInterval) {
+        alertInterval = setInterval(() => {
+          const start = alertStart[worstSensor];
+          if (start) document.getElementById('alert-timer').textContent = formatTimer(Date.now() - start);
+        }, 1000);
+      }
+    } else {
+      banner.style.display = 'none';
+      if (alertInterval) { clearInterval(alertInterval); alertInterval = null; }
+    }
+  }
+
+  function setSensorAlert(sensor, level, card) {
+    const prev = alertState[sensor];
+    if (prev === level) return;
+
+    // Log event
+    addEventLog(sensor, level, parseFloat(document.getElementById('val-' + sensor)?.textContent) || 0,
+      sensor === 'current' ? 'A' : sensor === 'vibration' ? 'm/s²' : '°C');
+
+    // Sound
+    if (level === 'alert') playBeep(440, 300);
+    else if (level === 'warn') playBeep(660, 150);
+
+    // Timer
+    if (level !== 'normal') {
+      if (!alertStart[sensor]) alertStart[sensor] = Date.now();
+    } else {
+      alertStart[sensor] = null;
+    }
+
+    alertState[sensor] = level;
+
+    // Card pulse class
+    if (card) {
+      card.classList.remove('card-alert', 'card-warn-pulse');
+      if (level === 'alert') card.classList.add('card-alert');
+      else if (level === 'warn') card.classList.add('card-warn-pulse');
+    }
+
+    updateAlertBanner();
+  }
+
   function updateSensorCard(sensor, value, maxVal) {
-    const valEl = document.getElementById('val-' + sensor);
-    const barEl = document.getElementById('bar-' + sensor);
-    const dotEl = document.getElementById('dot-' + sensor);
+    const valEl    = document.getElementById('val-' + sensor);
+    const barEl    = document.getElementById('bar-' + sensor);
+    const dotEl    = document.getElementById('dot-' + sensor);
     const statusEl = document.getElementById('status-' + sensor);
+    const card     = document.querySelector('.sensor-card.' + sensor);
 
     valEl.textContent = value.toFixed(2);
     const pct = Math.min((value / maxVal) * 100, 100);
     barEl.style.width = pct + '%';
 
-    if (sensor === 'vibration') {
-      // Vibración: Normal < 20 m/s², Advertencia >= 40 m/s²
-      if (value < 20) {
-        dotEl.className = 'card-status-dot';
-        statusEl.textContent = 'NORMAL';
-      } else if (value < 40) {
-        dotEl.className = 'card-status-dot';
-        statusEl.textContent = 'NORMAL';
-      } else {
-        dotEl.className = 'card-status-dot warn';
-        statusEl.textContent = 'ADVERTENCIA';
-      }
+    const t = THRESHOLDS[sensor];
+    let level = 'normal';
+    if (value >= t.alert)     level = 'alert';
+    else if (value >= t.warn) level = 'warn';
+
+    const msg = MESSAGES[sensor][level];
+
+    if (level === 'normal') {
+      dotEl.className = 'card-status-dot';
+    } else if (level === 'warn') {
+      dotEl.className = 'card-status-dot warn';
     } else {
-      if (pct < 60) {
-        dotEl.className = 'card-status-dot';
-        statusEl.textContent = 'NORMAL';
-      } else if (pct < 85) {
-        dotEl.className = 'card-status-dot warn';
-        statusEl.textContent = 'ADVERTENCIA';
-      } else {
-        dotEl.className = 'card-status-dot danger';
-        statusEl.textContent = 'ALERTA';
-      }
+      dotEl.className = 'card-status-dot danger';
     }
+    statusEl.textContent = msg;
+
+    setSensorAlert(sensor, level, card);
   }
 
   // ===== CHART =====
