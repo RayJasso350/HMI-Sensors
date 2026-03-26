@@ -1133,29 +1133,59 @@
                 <div class="card-id">MEMS Acelerómetro — LIS2DW12</div>
               </div>
             </div>
-            <div class="card-value" id="val-vibration">—</div>
-            <div class="card-unit">m/s²</div>
+            <!-- RODAMIENTO FRONTAL -->
+            <div style="font-size:9px;letter-spacing:2px;color:var(--text2);margin-bottom:4px">FRONT BEARING</div>
+            <div class="card-value" id="val-vibration" style="font-size:2rem">—</div>
+            <div class="card-unit">m/s² — MAGNITUDE</div>
             <div class="card-bar-bg"><div class="card-bar" id="bar-vibration" style="width:0%"></div></div>
-            <div class="thermal-sub" style="border-top:1px solid rgba(0,255,157,0.15); padding-top:10px; margin-bottom:4px;">
+            <div class="thermal-sub" style="border-top:1px solid rgba(0,255,157,0.15); padding-top:8px; margin-bottom:4px;">
               <div class="thermal-row">
-                <span class="thermal-label">EJE X</span>
-                <span class="thermal-val" style="color:var(--accent2);font-size:13px" id="vib-x">—</span>
+                <span class="thermal-label">X</span>
+                <span class="thermal-val" style="color:var(--accent2);font-size:12px" id="vib-x">—</span>
               </div>
               <div class="thermal-row">
-                <span class="thermal-label">EJE Y</span>
-                <span class="thermal-val" style="color:var(--accent2);font-size:13px" id="vib-y">—</span>
+                <span class="thermal-label">Y</span>
+                <span class="thermal-val" style="color:var(--accent2);font-size:12px" id="vib-y">—</span>
               </div>
               <div class="thermal-row">
-                <span class="thermal-label">EJE Z</span>
-                <span class="thermal-val" style="color:var(--accent2);font-size:13px" id="vib-z">—</span>
+                <span class="thermal-label">Z</span>
+                <span class="thermal-val" style="color:var(--accent2);font-size:12px" id="vib-z">—</span>
               </div>
             </div>
-            <div class="card-footer">
+            <div class="card-footer" style="margin-bottom:12px">
               <div class="card-status">
                 <div class="card-status-dot" id="dot-vibration"></div>
                 <span id="status-vibration">ESPERANDO...</span>
               </div>
-              <span id="range-vibration">0 – 80 m/s²</span>
+              <span>0 – 80 m/s²</span>
+            </div>
+
+            <!-- RODAMIENTO TRASERO -->
+            <div style="height:1px;background:rgba(0,255,157,0.2);margin-bottom:12px"></div>
+            <div style="font-size:9px;letter-spacing:2px;color:var(--text2);margin-bottom:4px">REAR BEARING</div>
+            <div class="card-value" id="val-vibration2" style="font-size:2rem">—</div>
+            <div class="card-unit">m/s² — MAGNITUDE</div>
+            <div class="card-bar-bg"><div class="card-bar" id="bar-vibration2" style="width:0%"></div></div>
+            <div class="thermal-sub" style="border-top:1px solid rgba(0,255,157,0.15); padding-top:8px; margin-bottom:4px;">
+              <div class="thermal-row">
+                <span class="thermal-label">X</span>
+                <span class="thermal-val" style="color:var(--accent2);font-size:12px" id="vib2-x">—</span>
+              </div>
+              <div class="thermal-row">
+                <span class="thermal-label">Y</span>
+                <span class="thermal-val" style="color:var(--accent2);font-size:12px" id="vib2-y">—</span>
+              </div>
+              <div class="thermal-row">
+                <span class="thermal-label">Z</span>
+                <span class="thermal-val" style="color:var(--accent2);font-size:12px" id="vib2-z">—</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="card-status">
+                <div class="card-status-dot" id="dot-vibration2"></div>
+                <span id="status-vibration2">ESPERANDO...</span>
+              </div>
+              <span>0 – 80 m/s²</span>
             </div>
           </div>
 
@@ -1597,6 +1627,44 @@
     });
 
     // Camara Termica MLX90640
+    // Rodamiento Trasero — vibracion2
+    onValue(ref(db, 'sensores/vibracion2'), (snap) => {
+      if (!esp32Conectado) return;
+      const val = snap.val();
+      if (val !== null) {
+        let v;
+        if (typeof val === 'object') {
+          v = parseFloat(val.magnitud ?? val.rmsTotal ?? val.total ?? 0);
+          const xEl = document.getElementById('vib2-x');
+          const yEl = document.getElementById('vib2-y');
+          const zEl = document.getElementById('vib2-z');
+          if (xEl) xEl.textContent = parseFloat(val.x ?? val.rmsX ?? 0).toFixed(2);
+          if (yEl) yEl.textContent = parseFloat(val.y ?? val.rmsY ?? 0).toFixed(2);
+          if (zEl) zEl.textContent = parseFloat(val.z ?? val.rmsZ ?? 0).toFixed(2);
+        } else {
+          v = parseFloat(val);
+        }
+        if (!isNaN(v)) {
+          // Update card manually for vibration2
+          const valEl = document.getElementById('val-vibration2');
+          const barEl = document.getElementById('bar-vibration2');
+          const dotEl = document.getElementById('dot-vibration2');
+          const statusEl = document.getElementById('status-vibration2');
+          const card = document.querySelector('.sensor-card.vibration');
+          if (valEl) valEl.textContent = v.toFixed(2);
+          if (barEl) barEl.style.width = Math.min((v / 80) * 100, 100) + '%';
+          const t = THRESHOLDS['vibration2'];
+          let level = 'normal';
+          if (v >= t.alert) level = 'alert';
+          else if (v >= t.warn) level = 'warn';
+          const msg = MESSAGES['vibration2'][level];
+          if (dotEl) dotEl.className = level === 'normal' ? 'card-status-dot' : level === 'warn' ? 'card-status-dot warn' : 'card-status-dot danger';
+          if (statusEl) statusEl.textContent = msg;
+          setSensorAlert('vibration2', level, null); // no pulse whole card, each has its own status
+        }
+      }
+    });
+
     // Escuchar cada campo de temperatura individualmente para capturar todos los cambios
     onValue(ref(db, 'sensores/temperatura/maxima'), (snap) => {
       if (!esp32Conectado) return;
@@ -1641,9 +1709,9 @@
   }
 
   // ===== ALERT SYSTEM =====
-  const alertState   = { current: 'normal', vibration: 'normal', thermal: 'normal' };
-  const alertTimers  = { current: null,     vibration: null,     thermal: null      };
-  const alertStart   = { current: null,     vibration: null,     thermal: null      };
+  const alertState   = { current: 'normal', vibration: 'normal', vibration2: 'normal', thermal: 'normal' };
+  const alertTimers  = { current: null,     vibration: null,     vibration2: null,     thermal: null      };
+  const alertStart   = { current: null,     vibration: null,     vibration2: null,     thermal: null      };
   let   alertInterval = null;
   const eventLog     = [];
   const MAX_EVENTS   = 50;
@@ -1651,7 +1719,8 @@
   // Thresholds
   const THRESHOLDS = {
     current:   { warn: 4.2,  alert: 5.2  },
-    vibration: { warn: 20.0, alert: 40.0 },
+    vibration:  { warn: 20.0, alert: 40.0 },
+    vibration2: { warn: 20.0, alert: 40.0 },
     thermal:   { warn: 60.0, alert: 75.0 }
   };
 
@@ -1666,6 +1735,11 @@
       warn:    'ABNORMAL VIBRATION — INSPECT BEARINGS',
       alert:   'CRITICAL VIBRATION — STOP MOTOR'
     },
+    vibration2: {
+      normal:  'NORMAL OPERATION',
+      warn:    'ABNORMAL VIBRATION — INSPECT BEARINGS',
+      alert:   'CRITICAL VIBRATION — STOP MOTOR'
+    },
     thermal: {
       normal:  'NORMAL OPERATION',
       warn:    'HIGH TEMPERATURE — CHECK COOLING',
@@ -1673,7 +1747,7 @@
     }
   };
 
-  const SENSOR_NAMES = { current: 'CURRENT', vibration: 'VIBRATION', thermal: 'THERMAL' };
+  const SENSOR_NAMES = { current: 'CURRENT', vibration: 'FRONT BEARING', vibration2: 'REAR BEARING', thermal: 'THERMAL' };
 
   function playBeep(freq = 880, duration = 200) {
     try {
@@ -2073,6 +2147,11 @@
     document.getElementById('bar-vibration').style.width = '0%';
     document.getElementById('dot-vibration').className = 'card-status-dot';
     document.getElementById('status-vibration').textContent = 'SIN SEÑAL';
+    document.getElementById('val-vibration2').textContent = '—';
+    document.getElementById('bar-vibration2').style.width = '0%';
+    document.getElementById('dot-vibration2').className = 'card-status-dot';
+    document.getElementById('status-vibration2').textContent = 'SIN SEÑAL';
+    ['vib2-x','vib2-y','vib2-z'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '—'; });
 
     document.getElementById('val-thermal').textContent = '—';
     document.getElementById('bar-thermal').style.width = '0%';
